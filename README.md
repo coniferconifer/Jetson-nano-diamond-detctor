@@ -9,7 +9,7 @@ However, vehicles do not notice the diamond-shaped symbols and approach
 the pedestrian crossing at a dangerous speed. 
 
 detectnet-diamond.py uses a Jetson nano and a USB camera to 
-detect the diamond-shaped symbols (diamond) and outputs the rising pulse to GPIO38 where ISD1802 board is connected.
+detect the diamond-shaped symbols and outputs the rising pulse to GPIO38 where ISD1820 board is connected.
 
 ISD1820 is a board that can record audio for max 10 seconds and plays back 
 the audio if the rising pulse enters the PlayE terminal. 
@@ -107,6 +107,7 @@ $ echo 1 > /sys/class/gpio/gpio200/value
 ## run shell script 
 
 The first time it is started, it takes about 10 minutes for inference to begin.
+Since ./models/diamond/ssd-mobilenet.onnx is zipped to upload on github , please unzip before use.
 
 ```
 ./detectnet-camera-diamond.py  --headless=true --camera=/dev/video0 --width=640 --height=480 --model=models/diamond/ssd-mobilenet.onnx --labels=models/diamond/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes
@@ -129,6 +130,7 @@ The C270n camera has a resolution of 1280x720 and a 60-degree angle of view but 
 In Japanese:
 
 横断歩道の前の菱形マーク(ダイヤマーク）の認識をJetson nanoで検出できるか試したものです。./models/diamond/ssd-mobilenet.onnx はわずかな枚数の映像で学習したので直進左折マークなどの誤認識もありますが、近所の菱形ダイヤマークはかなりの高確率で検出できています。
+カメラは視界の邪魔にならないようダッシュボードの上に耐震粘着テープで転倒しないように貼り付けています。
 
 Ref: https://github.com/dusty-nv/jetson-inference/blob/master/docs/pytorch-ssd.md
 
