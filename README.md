@@ -25,7 +25,9 @@ it takes about 30 seconds to recognize the diamond-shaped symbols.
 
 This program is derived from https://github.com/dusty-nv/jetson-inference/blob/master/python/examples/detectnet.py
 
-
+## Revision history ##
+Low pass filter for confidence level is introduced to reduce false detection.
+rate=0.1 is default , means about 10 frames of confidence > 0.5 are necessary to detect a diamond.
 
 ## Hard ware : 
 Jetson nano 2GB
@@ -46,7 +48,7 @@ any of one of pin Number 6,9,14,20,25,30,34,39 can be used as GND for ISD1820
 ```
 https://jetsonhacks.com/nvidia-jetson-nano-j41-header-pinout/
 
-If the system reacts incorrectly when the vehicle stops, it will continue to react for a long time, so the system uses the vehicle speed obtained from the GPS to recognize the vehicle at a speed of 30 km/h or more. (speedThresh)
+If the system reacts incorrectly when the vehicle stops, it will continue to react for a long time, so the system uses the vehicle speed obtained from the GPS to recognize the vehicle at a speed of 20 km/h or more. (speedThresh)
 Also, since Jetson nano is not equipped with a battery-backed RTC, it is not possible to get a time that can be used for logging in environments without an Internet connection, so the time is obtained from GPS.
 
 default TIMEZONE is JST
@@ -129,7 +131,8 @@ The C270n camera has a resolution of 1280x720 and a 60-degree angle of view but 
 
 In Japanese:
 
-横断歩道の前の菱形マーク(ダイヤマーク）の認識をJetson nanoで検出できるか試したものです。./models/diamond/ssd-mobilenet.onnx はわずかな枚数の映像で学習したので直進左折マークなどの誤認識もありますが、近所の菱形ダイヤマークはかなりの高確率で検出できています。
+横断歩道の前の菱形マーク(ダイヤマーク）の認識をJetson nanoで検出できるか試したものです。./models/diamond/ssd-mobilenet.onnx はわずかな枚数の映像で学習したので誤検出があります。そこで、confidenceレベルにフレーム毎のローパスフィルタを掛けることで誤検知を抑制しています。
+rate=0.1だと10フレーム約0.3秒位confidenceが0.5以上ないとフィルターされたconfidenceE は0.5以上にならないので検出が0.3秒程度遅れますが、誤検知は減らせています。
 カメラは視界の邪魔にならないようダッシュボードの上に耐震粘着テープで転倒しないように貼り付けています。
 
 Ref: https://github.com/dusty-nv/jetson-inference/blob/master/docs/pytorch-ssd.md

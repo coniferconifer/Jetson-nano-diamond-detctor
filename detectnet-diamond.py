@@ -59,11 +59,13 @@ class message:
 # tuning parameters
 #
 #speedThresh=30.0 # km/h minimum speed to detect and warn the diamond mark 
-speedThresh=0.0 # km/h minimum speed to detect and warn the diamond mark 
+speedThresh=20.0 # km/h minimum speed to detect and warn the diamond mark 
+#speedThresh=0.0 # km/h minimum speed to detect and warn the diamond mark 
 minX=150.0 #X range to find diamond mark  in 640x480 camera
 maxX=640.0-minX
 #confidenceThresh=0.5
 confidenceThresh=0.50
+rate=0.9 # confidenceE is low pass filtered confidence of every frame (max confidence is used in the same frame) 
 #
 centerPosition=640.0/2.0
 
@@ -136,8 +138,8 @@ net = jetson.inference.detectNet(opt.network, sys.argv, opt.threshold)
 input = jetson.utils.videoSource(opt.input_URI, argv=sys.argv)
 output = jetson.utils.videoOutput(opt.output_URI, argv=sys.argv+is_headless)
 n_diamond=0
+confidenceE=0.0
 # process frames until the user exits
-
 while True:
 
 #reset GPIO before every frame
@@ -146,7 +148,7 @@ while True:
 # capture the next image
 	img = input.Capture()
 	utnew=time.time()
-
+	confidenceRaw=0.0
 	# detect objects in the image (with overlay)
 	n_diamond=0
 	detections = net.Detect(img, overlay=opt.overlay)
@@ -156,15 +158,18 @@ while True:
 		width=detection.Width
 		centerPosition = (detection.Left + detection.Right)/2.0
 		confidence=detection.Confidence
+		if confidenceRaw < confidence :
+			confidenceRaw = confidence # get max confidence in the loop
+
 #		if "diamond"==classid :
 		if "diamond"==classid :
 			n_diamond=n_diamond+1
 			if m.speed != "n/a":
 				print(f"{time.perf_counter():.3f}",',',end="")
-				print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',',confidence)
+				print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',',confidence,',',confidenceE)
 				if float(m.speed)*3.6 >= speedThresh: #compare speed by km/h 
 					if centerPosition < maxX and centerPosition > minX:
-						if  confidence > confidenceThresh:
+						if  confidenceE > confidenceThresh:
 							GPIO.output(pin_diamond, GPIO.HIGH) #if speed is available
 							print('diamond: Left,Right,CenterX ',detection.Left, ',',detection.Right,',',centerPosition)
 						print(detection)
@@ -186,7 +191,7 @@ while True:
 						print(detection)
 					
 		else:
-			if "person"==classid:
+			if "person"==classid: # ./models/diamond/ssd-mobilenet.onnx is not yet trained for person
 				print("found person")
 				GPIO.output(pin_person, GPIO.HIGH)
 
@@ -196,7 +201,7 @@ while True:
 # periodical  GPS record here
 	if  utnew - ut > 1.0:
 		print(f"{time.perf_counter():.3f}",',',end="")
-		print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond)
+		print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',',confidenceE)
 		ut=utnew
 
 	if len(detections)>1:
@@ -204,6 +209,8 @@ while True:
 
 	# render the image
 	output.Render(img)
+	# update confidenceE per frame
+	confidenceE=confidenceE*rate+confidenceRaw*(1.0-rate)
 
 	# update the title bar
 #	output.SetStatus("{:s} | Network {:.0f} FPS".format(opt.network, net.GetNetworkFPS()))
