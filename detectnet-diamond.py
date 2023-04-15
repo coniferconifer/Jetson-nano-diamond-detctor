@@ -171,13 +171,13 @@ while True:
 					if centerPosition < maxX and centerPosition > minX:
 						if  confidenceE > confidenceThresh:
 							GPIO.output(pin_diamond, GPIO.HIGH) #if speed is available
-							print('diamond: Left,Right,CenterX ',detection.Left, ',',detection.Right,',',centerPosition)
+							print('diamond: Left,Right,CenterX,lat,lon ',detection.Left, ',',detection.Right,',',centerPosition,',',m.lat,',',m.lon,', detected')
 						print(detection)
 					else:
-						print('diamond: Left,Right,CenterX ',detection.Left, ',',detection.Right,',',centerPosition,', outOfRange')
+						print('diamond: Left,Right,CenterX,lat,lon ',detection.Left, ',',detection.Right,',',centerPosition,',',m.lat,',',m.lon,', outOfRange')
 						print(detection)
 				else:
-						print('diamond: Left,Right,CenterX ',detection.Left, ',',detection.Right,',',centerPosition,', underSpeed')
+						print('diamond: Left,Right,CenterX,lat,lon ',detection.Left, ',',detection.Right,',',centerPosition,',',m.lat,',',m.lon,', underSpeed')
 						print(detection)
 
 					
