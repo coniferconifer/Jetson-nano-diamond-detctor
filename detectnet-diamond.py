@@ -26,10 +26,10 @@
 #
 # ./detectnet-diamond.py  --headless=true --camera=/dev/video0 --width=640 --height=480 --model=models/diamond/ssd-mobilenet.onnx --labels=models/diamond/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes
 
-# time(sec) from start, date , lat , lon, speed(km/h) , number of diamond  ,confidence level
+# time(sec) from start, date , lat , lon, speed(km/h) , number of diamond  ,confidence level, low pass filtered confidence level
 #
-# 881.677 ,2023-03-17 23:48:08 , 33.318686 , 134.6852810833 , 0.0 , 1 , 0.567
-# Left,Right,CenterX  148.984375 , 326.25 , 237.6171875
+# 881.677 ,2023-03-17 23:48:08 , 33.318686 , 134.6852810833 , 0.0 , 1 , 0.567 , 0.543
+# Left,Right,CenterX,lat,lon  148.984375 , 326.25 , 237.6171875, 33.318686 , 134.6852810833 
 
 import jetson.inference
 import jetson.utils
@@ -73,6 +73,7 @@ centerPosition=640.0/2.0
 ut = time.time()
 utnew = time.time()
 # thread to get GPS data
+gpsIsReady=0
 def get_gpsdata(mes):
 	for new_data in gps_socket:
 		if new_data:
@@ -152,6 +153,12 @@ while True:
 	# detect objects in the image (with overlay)
 	n_diamond=0
 	detections = net.Detect(img, overlay=opt.overlay)
+
+# GPS ready check by ISD1830
+	if gpsIsReady == 0 and m.lat != 'n/a' :
+		testGPIO()
+		gpsIsReady = 1
+
 	for detection in detections:
 		classid=net.GetClassDesc(detection.ClassID)
 		area=detection.Area
@@ -166,7 +173,7 @@ while True:
 			n_diamond=n_diamond+1
 			if m.speed != "n/a":
 				print(f"{time.perf_counter():.3f}",',',end="")
-				print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',',confidence,',',confidenceE)
+				print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',','{:.3f}'.format(confidence),',','{:.3f}'.format(confidenceE))
 				if float(m.speed)*3.6 >= speedThresh: #compare speed by km/h 
 					if centerPosition < maxX and centerPosition > minX:
 						if  confidenceE > confidenceThresh:
@@ -201,7 +208,7 @@ while True:
 # periodical  GPS record here
 	if  utnew - ut > 1.0:
 		print(f"{time.perf_counter():.3f}",',',end="")
-		print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',',confidenceE)
+		print( m.time, ',' , m.lat ,',', m.lon, ',', format(float(m.speed)*3.6, ".1f"), ',', n_diamond,',','{:.3f}'.format(confidenceE))
 		ut=utnew
 
 	if len(detections)>1:
