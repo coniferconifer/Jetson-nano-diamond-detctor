@@ -74,8 +74,11 @@ ut = time.time()
 utnew = time.time()
 # thread to get GPS data
 gpsIsReady=0
+stop_threads=False
 def get_gpsdata(mes):
 	for new_data in gps_socket:
+		if stop_threads:
+			break
 		if new_data:
 			data_stream.unpack(new_data)
 			mes.speed = data_stream.TPV['speed']
@@ -147,7 +150,14 @@ while True:
 	GPIO.output(pin_person,GPIO.LOW)
 	GPIO.output(pin_diamond,GPIO.LOW)
 # capture the next image
-	img = input.Capture()
+	try:
+		img = input.Capture()
+#		raise ZeroDivisionError #trigger error simulation
+	except: 
+		print('detectnet capture error')
+		output.Close()
+		break 
+
 	utnew=time.time()
 	confidenceRaw=0.0
 	# detect objects in the image (with overlay)
@@ -229,4 +239,10 @@ while True:
 	if not input.IsStreaming() or not output.IsStreaming():
 		break
 
+print('detectnet-diamond.py stops')
+del input #force stop gstreamer
+del output
+stop_threads=True # force stop GPS reader
+thread1.join()
+sys.exit(0)
 
