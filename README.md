@@ -112,7 +112,7 @@ The first time it is started, it takes about 10 minutes for inference to begin.
 Since ./models/diamond/ssd-mobilenet.onnx is zipped to upload on github , please unzip before use.
 
 ```
-./detectnet-camera-diamond.py  --headless=true --camera=/dev/video0 --width=640 --height=480 --model=models/diamond/ssd-mobilenet.onnx --labels=models/diamond/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes
+./detectnet-diamond.py  --headless=true --camera=/dev/video0 --width=640 --height=480 --model=models/diamond/ssd-mobilenet.onnx --labels=models/diamond/labels.txt --input-blob=input_0 --output-cvg=scores --output-bbox=boxes
 ```
 --headless=true should be removed when you run on Window system.
 
