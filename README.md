@@ -135,7 +135,7 @@ time(sec) from start, date , lat , lon, speed(km/h) , number of diamond  ,confid
 881.677 ,2023-03-17 23:48:08 , 33.318686 , 134.6852810833 , 0.0 , 1 , 0.56
 Left,Right,CenterX  148.984375 , 326.25 , 237.6171875
 ```
-This program is a diamond-shaped mark learned by transfer learning according to what is described in re-training SSD-mobilenet. Although the number of learned diamond-shaped marks is small, the program is able to detect diamond-shaped  marks, but it sometimes mis-detects roadside objects and straight-left turn marks.
+This program is trained to detect diamond-shaped mark by transfer learning according to what is described in re-training SSD-mobilenet. Although the number of learned diamond-shaped marks is small, the program is able to detect diamond-shaped  marks, but it sometimes mis-detects roadside objects,etc.
 
 The C270n camera has a resolution of 1280x720 and a 60-degree angle of view but is treated as a 640x480 camera input. To avoid misrecognizing roadside objects, when the center position of the recognized diamond shape falls within 150 pixels of the left or right edge, it is excluded.
 
