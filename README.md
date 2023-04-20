@@ -27,7 +27,17 @@ This program is derived from https://github.com/dusty-nv/jetson-inference/blob/m
 
 ## Revision history ##
 Low pass filter for confidence level is introduced to reduce false detection.
-rate=0.1 is default , means about 10 frames of confidence > 0.5 are necessary to detect a diamond.
+rate=0.9 is default , means about 10 frames of confidence > 0.5 are necessary to detect a diamond.
+
+Since sometimes gstreamer stops by "failed to retrieve next image" , detectnet-diamond.py dies and is restarted by detectnet-diamond.sh
+<pre>
+[gstreamer] gstDecoder -- failed to retrieve next image buffer
+Expecting value: line 1 column 1 (char 0)Expecting value: line 1 column 1 (char 0)Expecting value: line 1 column 1 (char 0)Extra data: line 1 column 4 (char 3)[gstreamer] gstreamer message qos ==> v4l2src0
+Traceback (most recent call last):
+  File "/home/xxxxxx/detectnet-diamond.py", line 150, in <module>
+    img = input.Capture()
+Exception: jetson.utils -- videoSource failed to capture image
+</pre>
 
 ## Hard ware : 
 Jetson nano 2GB
@@ -132,7 +142,7 @@ The C270n camera has a resolution of 1280x720 and a 60-degree angle of view but 
 In Japanese:
 
 横断歩道の前の菱形マーク(ダイヤマーク）の認識をJetson nanoで検出できるか試したものです。./models/diamond/ssd-mobilenet.onnx はわずかな枚数の映像で学習したので誤検出があります。そこで、confidenceレベルにフレーム毎のローパスフィルタを掛けることで誤検知を抑制しています。
-rate=0.1だと10フレーム約0.3秒位confidenceが0.5以上ないとフィルターされたconfidenceE は0.5以上にならないので検出が0.3秒程度遅れますが、誤検知は減らせています。
+rate=0.9だと10フレーム約0.3秒位confidenceが0.5以上ないとフィルターされたconfidenceE は0.5以上にならないので検出が0.3秒程度遅れますが、誤検知は減らせています。
 カメラは視界の邪魔にならないようダッシュボードの上に耐震粘着テープで転倒しないように貼り付けています。
 
 Ref: https://github.com/dusty-nv/jetson-inference/blob/master/docs/pytorch-ssd.md
